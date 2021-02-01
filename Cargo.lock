@@ -736,6 +736,7 @@ dependencies = [
  "image",
  "nalgebra",
  "nom_stl",
+ "rayon",
 ]
 
 [[package]]
@@ -745,6 +746,7 @@ dependencies = [
  "console_log",
  "js-sys",
  "nalgebra",
+ "nom_stl",
  "racy",
  "wasm-bindgen",
  "web-sys",

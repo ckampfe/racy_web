@@ -1,7 +1,6 @@
 const RACY_WEB_VERSION: &str = env!("RACY_WEB_VERSION");
 
 use console_log::console_log;
-use nalgebra::Point3;
 use racy::Options;
 use std::borrow::Borrow;
 use std::fmt;
@@ -10,9 +9,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::File;
 use yew::services::reader::{FileData, ReaderTask};
 use yew::services::ReaderService;
-use yew::{
-    html, html::ChangeData, Component, ComponentLink, Html, InputData, Properties, ShouldRender,
-};
+use yew::{html, html::ChangeData, Component, ComponentLink, Html, InputData, ShouldRender};
 
 enum MimeType {
     PNG,
@@ -157,7 +154,6 @@ impl Component for Model {
             Msg::FileLoaded(file) => {
                 console_log!("finished loading image: {}", file.name);
 
-                // let i = image::load_from_memory(&file.content).unwrap();
                 self.stl = Rc::new(Some(file.content));
 
                 true
@@ -169,12 +165,14 @@ impl Component for Model {
             }
 
             Msg::Render => {
-                if let Some(stl) = self.stl.borrow() {
+                if let Some(bytes) = self.stl.borrow() {
                     let window = web_sys::window().unwrap().window();
                     let performance = window.performance().unwrap();
 
                     let start = performance.now();
-                    let rendered = racy::render(stl, &self.options);
+                    let mut cursor = std::io::Cursor::new(bytes);
+                    let stl = nom_stl::parse_stl(&mut cursor).unwrap();
+                    let rendered = racy::render(&stl, &self.options);
 
                     match rendered {
                         Ok(rendered_bytes) => {
@@ -213,6 +211,7 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <div class="container">
+                <div>{ RACY_WEB_VERSION }</div>
                 <div class="row">
                     <div class="column">
                         <div>{"width"}</div>
